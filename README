@@ -1,0 +1,120 @@
+= Reliable Messaging for Ruby
+
+This package provides reliable messaging and persistent queues for
+building asynchronous applications in Ruby.
+
+This release provides the following features:
+
+* Simple API.
+* Transction processing.
+* Disk-based and MySQL message stores.
+* Best effort, repeated and once-only delivery semantics.
+* Priority queues, message expiration, dead-letter queue.
+* Message selectors.
+* Local and remote queue managers using DRb.
+
+== Download
+
+The latest version of Reliable Messaging can be found at
+
+* http://rubyforge.org/projects/reliable-msg/
+
+For more information
+
+* http://trac.labnotes.org/cgi-bin/trac.cgi/wiki/Ruby/ReliableMessaging
+
+
+== Installation
+
+You can download the sources directly, or install the GEM package
+(recommended) with
+
+  gem install reliable-msg
+
+To create the configuration file and queues for use with the disk-based
+message store
+
+  queues install disk [<path>]
+
+The optional <tt>path</tt> argument specifies the directory in which
+queue index and messages are store. The default directory is
+<tt>queues</tt>.
+
+To create the configuration file and queues for use with the MySQL
+message store
+
+  queues install mysql <host> <user> <password> <database>
+         [--port <port>] [--socket <socket>] [--prefix <prefix>]
+
+You must have MySQL libraries installed in order to use this message
+store, either native MySQL libraries or the Rails pure-Ruby adapter.
+It uses the supplied connection properties and creates tables in your
+database using the specified prefix. The default prefix is
+<tt>reliable_msg_</tt>.
+
+For example
+
+  queues install mysql localhost my-db user secret
+
+=== Configuration file
+
+The installation process creates a configuration file
+(<tt>queues.cfg</tt>) located in the same directory as the library.
+You can specify a different location for the configuration file using
+the option <tt>-c</tt> of <tt>--config</tt>.
+
+When you use the queue manager, it looks for a specified configuration
+file, or if no configuration file is specified it looks for the
+<tt>queues.cfg</tt> file, first in the local directory and then in the
+installation directory. If no file exists, it will create a default one
+to use the disk-based message store.
+
+=== UUID state file
+
+Reliable messaging requires a UUID generator that is able to create
+universally unique identifiers. The UUID generator uses the
+<tt>uuid.state</tt> file to hold a unique machine identifier and a
+rolling sequence number.
+
+On the first usage, a <tt>uuid.state</tt> file is created in the
+installation directory. An existing state file will be used if one
+exists in the local directory or the installation directory.
+
+The unique machine identifier is obtained from one of the network
+card's MAC address on your machine, using either the +ipconfig+ or
++ifconfig+ commands. If no MAC address can be found, or you want to
+pick a specific MAC address, create a <tt>uuid.state</tt> file
+manually.
+
+
+== Simple Example
+
+Start the queue manager as a standalone server
+
+  queues manager start
+
+Use the queue API in your application
+
+  require 'reliable-msg'
+
+  queue = Queue.new 'my-queue'
+  queue.put obj
+  msg = queue.get
+  assert msg.object == obj
+
+Stop the queue manager
+
+  queues manager stop
+
+== Change log
+
+:include: CHANGELOG
+
+
+== License
+
+This package is licensed under the MIT license and/or the {Creative
+Commons Attribution-ShareAlike}[http://creativecommons.org/licenses/by-sa/2.5/legalcode].
+
+:include: MIT-LICENSE
+

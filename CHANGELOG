@@ -1,0 +1,32 @@
+Release 1.1.0 (Nov 26, 2005)
+
+* Added: Topic class for publishing messages on a topic.
+* Added: Can set delivery option when creating a queue.
+* Added: Queue.name() returns the queue's name.
+* Added: Command line options to list or delete all messages
+  in named queue.
+* Added: Rails integration for easily accessing queues/topics
+  from a Rails controller.
+* Changed: Quque and Topic both extend the base class Client.
+* Changed: Cannot start two queue managers in the same process.
+* Changed: Each message has a created header indicating date/time
+  of creation. Received header no longer exists.
+* Changed: Header retry renamed to delivered, to prevent clash with
+  reserved Ruby keyword.
+* Changed: Selectors are now executed in the client process.
+  Selectors can rely on client variables, methods and constants.
+* Changed: Specify maximum delivery attempts with the header
+  max_deliveries; get the redelivery attempt from the header
+  redelivery; the later is only set on the first redelivery attempt.
+* Fixed: Documentation errors in Queue.
+* Removed: Cannot associate default selector with queue.
+
+
+Release 1.0.1 (Nov 10, 2005)
+
+* Added: Test cases test put/get in memory and by reloading.
+* Fixed: Messages not retrieved in order after queue manager
+  recovers when using MySQL message store.
+* Fixed: Queue manager fails if stopped and then started again.
+
+

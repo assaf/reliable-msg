@@ -1,0 +1,8 @@
+begin
+  require 'reliable-msg'
+rescue LoadError
+  require 'rubygems'
+  require_gem 'reliable-msg'
+end
+ReliableMsg::CLI.new.run
+
