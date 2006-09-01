@@ -33,7 +33,7 @@ module ReliableMsg
 
     DEFAULT_DRB = {
       "port"=>Client::DRB_PORT,
-      "acl"=>"allow 127.0.0.1"
+      "acl"=>"allow localhost"
     }
 
     INFO_LOADED_CONFIG  = "Loaded queues configuration from: %s" #:nodoc:
@@ -268,11 +268,11 @@ module ReliableMsg
       @drb_server && @drb_server.alive?
     end
 
-    # Called by client to queue a message.
-    def queue(args)
+    # Called by client to enqueue a message.
+    def enqueue(args)
       # Get the arguments of this call.
       message, headers, queue, tid = args[:message], args[:headers], args[:queue].downcase, args[:tid]
-      raise ArgumentError, ERROR_SEND_MISSING_QUEUE unless queue and queue.instance_of?(String) and !queue.empty?
+      raise ArgumentError, ERROR_SEND_MISSING_QUEUE unless queue && queue.instance_of?(String) && !queue.empty?
       time = Time.new.to_i
       # TODO: change this to support the RM delivery protocol.
       id = args[:id] || UUID.new
@@ -329,7 +329,7 @@ module ReliableMsg
     def list(args)
       # Get the arguments of this call.
       queue = args[:queue].downcase
-      raise ArgumentError, ERROR_SEND_MISSING_QUEUE unless queue and queue.instance_of?(String) and !queue.empty?
+      raise ArgumentError, ERROR_SEND_MISSING_QUEUE unless queue && queue.instance_of?(String) && !queue.empty?
 
       return @mutex.synchronize do
         list = @store.get_headers queue
@@ -351,8 +351,8 @@ module ReliableMsg
       end
     end
 
-    # Called by client to enqueue message.
-    def enqueue(args)
+    # Called by client to dequeue message.
+    def dequeue(args)
       # Get the arguments of this call.
       queue, selector, tid = args[:queue].downcase, args[:selector], args[:tid]
       id, headers = nil, nil
@@ -396,7 +396,7 @@ module ReliableMsg
           @store.transaction { |inserts, deletes, dlqs| deletes << expired }
         end
         @mutex.synchronize { @locks.delete message[:id] }
-        return enqueue(args)
+        return dequeue(args)
       end
 
       delete = {:id=>message[:id], :queue=>queue, :headers=>headers}

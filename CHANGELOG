@@ -1,3 +1,11 @@
+Release 1.1.1 (Planned)
+
+* Changed: enqueue is actually dequeue, and queue is now enqueue.
+  Contributed by John-Mason Shackelford
+* Fixed: ACL uses localhost instead of 127.0.0.1 to work with OS/X IPv6
+  Contributed by Chuck Remes
+
+
 Release 1.1.0 (Nov 26, 2005)
 
 * Added: Topic class for publishing messages on a topic.

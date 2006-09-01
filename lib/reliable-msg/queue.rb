@@ -140,9 +140,9 @@ module ReliableMsg
       # If inside a transaction, always send to the same queue manager, otherwise,
       # allow repeated() to try and access multiple queue managers.
       if tx
-        return tx[:qm].queue(:message=>message, :headers=>headers, :queue=>(headers[:queue] || @queue), :tid=>tx[:tid])
+        return tx[:qm].enqueue(:message=>message, :headers=>headers, :queue=>(headers[:queue] || @queue), :tid=>tx[:tid])
       else
-        return repeated { |qm| qm.queue :message=>message, :headers=>headers, :queue=>(headers[:queue] || @queue) }
+        return repeated { |qm| qm.enqueue :message=>message, :headers=>headers, :queue=>(headers[:queue] || @queue) }
       end
     end
 
@@ -259,9 +259,9 @@ module ReliableMsg
         # If inside a transaction, always retrieve from the same queue manager,
         # otherwise, allow repeated() to try and access multiple queue managers.
         message = if tx
-          tx[:qm].enqueue :queue=>@queue, :selector=>selector, :tid=>tx[:tid]
+          tx[:qm].dequeue :queue=>@queue, :selector=>selector, :tid=>tx[:tid]
         else
-          repeated { |qm| qm.enqueue :queue=>@queue, :selector=>selector }
+          repeated { |qm| qm.dequeue :queue=>@queue, :selector=>selector }
         end
         # Result is either message, or result from processing block. Note that
         # calling block may raise an exception. We deserialize the message here

@@ -187,7 +187,7 @@ Available options:
           raise InvalidUsage unless queue
           begin
             qm = queue_manager(config_file)
-            while msg = qm.enqueue(:queue=>queue)
+            while msg = qm.dequeue(:queue=>queue)
             end
           rescue DRb::DRbConnError =>error
             puts "Cannot access queue manager: is it running?"
