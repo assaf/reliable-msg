@@ -205,8 +205,7 @@ module ReliableMsg
           @store.activate
 
           # Get the DRb URI from the configuration, or use the default. Create a DRb server.
-          drb = Config::DEFAULT_DRB
-          drb.merge(@config.drb) if @config.drb
+          drb = Config::DEFAULT_DRB.merge(@config.drb || {})
           drb_uri = "druby://localhost:#{drb['port']}"
           @drb_server = DRb::DRbServer.new drb_uri, self, :tcp_acl=>ACL.new(drb["acl"].split(" "), ACL::ALLOW_DENY)
           @logger.info format(INFO_ACCEPTING_DRB, drb_uri)

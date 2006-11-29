@@ -12,7 +12,7 @@
 
 require "drb"
 require "optparse"
-require "rdoc/usage"
+#require "rdoc/usage"
 require "reliable-msg/queue-manager"
 
 module ReliableMsg
