@@ -2,7 +2,6 @@
 # = message-store.rb - Queue manager storage adapters
 #
 # Author:: Assaf Arkin  assaf@labnotes.org
-# Documentation:: http://trac.labnotes.org/cgi-bin/trac.cgi/wiki/Ruby/ReliableMessaging
 # Copyright:: Copyright (c) 2005,2006 Assaf Arkin
 # License:: MIT and/or Creative Commons Attribution-ShareAlike
 #

@@ -6,12 +6,19 @@ building asynchronous applications in Ruby.
 This release provides the following features:
 
 * Simple API.
+
 * Transction processing.
+
 * Disk-based and MySQL message stores.
+
 * Best effort, repeated and once-only delivery semantics.
+
 * Priority queues, message expiration, dead-letter queue.
+
 * Message selectors.
+
 * Local and remote queue managers using DRb.
+
 
 == Download
 
@@ -19,9 +26,6 @@ The latest version of Reliable Messaging can be found at
 
 * http://rubyforge.org/projects/reliable-msg/
 
-For more information
-
-* http://trac.labnotes.org/cgi-bin/trac.cgi/wiki/Ruby/ReliableMessaging
 
 
 == Installation
@@ -106,15 +110,7 @@ Stop the queue manager
 
   queues manager stop
 
-== Change log
-
-:include: CHANGELOG
-
-
 == License
 
 This package is licensed under the MIT license and/or the {Creative
 Commons Attribution-ShareAlike}[http://creativecommons.org/licenses/by-sa/2.5/legalcode].
-
-:include: MIT-LICENSE
-
