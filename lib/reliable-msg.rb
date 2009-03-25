@@ -2,8 +2,8 @@ $:.unshift(File.dirname(__FILE__)) unless
   $:.include?(File.dirname(__FILE__)) || $:.include?(File.expand_path(File.dirname(__FILE__)))
 
 module ReliableMsg
-  PACKAGE = "reliable-msg"
-  VERSION = "1.1.0"
+  PACKAGE = 'reliable-msg'
+  VERSION = '1.1.1'
 end
 
 require "reliable-msg/queue"

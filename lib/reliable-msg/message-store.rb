@@ -279,7 +279,7 @@ module ReliableMsg
           # any referenced message to store new messages. The File object exists
           # if the file was opened before, otherwise, we need to open it again.
           free = @mutex.synchronize { @file_free.shift }
-          name = free ? free[0] : "#{@path}/#{UUID.new}.msg"
+          name = free ? free[0] : "#{@path}/#{UUID.generate}.msg"
           file = if free && free[1]
             free[1]
           else

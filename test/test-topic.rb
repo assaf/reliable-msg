@@ -9,6 +9,7 @@
 #++
 
 require 'test/unit'
+require 'rubygems'
 require 'reliable-msg'
 
 class TestTopic < Test::Unit::TestCase
@@ -40,8 +41,8 @@ class TestTopic < Test::Unit::TestCase
     def _test_single restart = nil
         # Put one message, check that we can retrieve it. Check that we
         # can only retrieve it once. Then put another message, repeat.
-        msg1 = UUID.new
-        msg2 = UUID.new
+        msg1 = UUID.generate
+        msg2 = UUID.generate
         @topic.put msg1
         restart.call if restart
         msg = @topic.get
@@ -66,7 +67,7 @@ class TestTopic < Test::Unit::TestCase
     end
 
     def _test_selector restart = nil
-        msg1 = UUID.new
+        msg1 = UUID.generate
         @topic.put msg1, :name=>"foo"
         restart.call if restart
         msg = @topic.get(ReliableMsg::Queue.selector { name == 'bar' })
@@ -85,8 +86,8 @@ class TestTopic < Test::Unit::TestCase
     def _test_non_expires restart = nil
         # Test that we can receive message that has not yet expired (30 second delay),
         # but cannot receive message that has expires (1 second, we wait for 2).
-        msg1 = UUID.new
-        msg2 = UUID.new
+        msg1 = UUID.generate
+        msg2 = UUID.generate
         @topic.put msg1, :expires=>30
         restart.call if restart
         msg = @topic.get

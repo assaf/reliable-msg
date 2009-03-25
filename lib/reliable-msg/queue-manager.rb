@@ -13,12 +13,7 @@ require "drb"
 require "drb/acl"
 require "thread"
 require "yaml"
-begin
-  require "uuid"
-rescue LoadError
-  require "rubygems"
-  require_gem "uuid"
-end
+require "uuid"
 require "reliable-msg/client"
 require "reliable-msg/message-store"
 
@@ -273,7 +268,7 @@ module ReliableMsg
       raise ArgumentError, ERROR_SEND_MISSING_QUEUE unless queue && queue.instance_of?(String) && !queue.empty?
       time = Time.new.to_i
       # TODO: change this to support the RM delivery protocol.
-      id = args[:id] || UUID.new
+      id = args[:id] || UUID.generate
       created = args[:created] || time
 
       # Validate and freeze the headers. The cloning ensures that the headers we hold in memory
@@ -439,7 +434,7 @@ module ReliableMsg
       message, headers, topic, tid = args[:message], args[:headers], args[:topic].downcase, args[:tid]
       raise ArgumentError, ERROR_PUBLISH_MISSING_TOPIC unless topic and topic.instance_of?(String) and !topic.empty?
       time = Time.new.to_i
-      id = args[:id] || UUID.new
+      id = args[:id] || UUID.generate
       created = args[:created] || time
 
       # Validate and freeze the headers. The cloning ensures that the headers we hold in memory
@@ -518,7 +513,7 @@ module ReliableMsg
 
     # Called by client to begin a transaction.
     def begin(timeout)
-      tid = UUID.new
+      tid = UUID.generate
       @transactions[tid] = {:inserts=>[], :deletes=>[], :timeout=>Time.new.to_i + timeout}
       tid
     end

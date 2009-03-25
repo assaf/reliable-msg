@@ -9,6 +9,7 @@
 #++
 
 require 'test/unit'
+require 'rubygems'
 require 'reliable-msg'
 
 class TestQueue < Test::Unit::TestCase
