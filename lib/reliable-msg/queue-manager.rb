@@ -324,19 +324,14 @@ module ReliableMsg
       queue = args[:queue].downcase
       raise ArgumentError, ERROR_SEND_MISSING_QUEUE unless queue && queue.instance_of?(String) && !queue.empty?
 
+
       return @mutex.synchronize do
         list = @store.get_headers queue
         now = Time.now.to_i
         list.inject([]) do |list, headers|
-          if queue != Client::DLQ && ((headers[:expires_at] && headers[:expires_at] < now) || (headers[:redelivery] && headers[:redelivery] >= headers[:max_deliveries]))
-            expired = {:id=>headers[:id], :queue=>queue, :headers=>headers}
-            if headers[:delivery] == :once || headers[:delivery] == :repeated
-              @store.transaction { |inserts, deletes, dlqs| dlqs << expired }
-            else # :best_effort
-              @store.transaction { |inserts, deletes, dlqs| deletes << expired }
-            end
+          if filtered(queue, headers)
+            # Don't list it
           else
-            # Need to clone headers (shallow, values are frozen) when passing in same process.
             list << headers.clone
           end
           list
@@ -358,15 +353,23 @@ module ReliableMsg
       # release the locks mutex as fast as possibe.
       message = @mutex.synchronize do
         message = @store.get_message queue do |headers|
-          not @locks.has_key?(headers[:id]) and case selector
-            when nil
-              true
-            when String
-              headers[:id] == selector
-            when Hash
-              selector.all? { |name, value| headers[name] == value }
+          if @locks.has_key?(headers[:id])
+            false
+          else
+            if filtered(queue, headers)
+              false
             else
-              raise RuntimeError, "Internal error"
+              case selector
+                when nil
+                  true
+                when String
+                  headers[:id] == selector
+                when Hash
+                  selector.all? { |name, value| headers[name] == value }
+                else
+                  raise RuntimeError, "Internal error"
+              end
+            end
           end
         end
         if message
@@ -376,21 +379,6 @@ module ReliableMsg
       end
       # Nothing to do if no message found.
       return unless message
-
-      # If the message has expired, or maximum delivery count elapsed, we either
-      # discard the message, or send it to the DLQ. Since we're out of a message,
-      # we call to get a new one. (This can be changed to repeat instead of recurse).
-      headers = message[:headers]
-      if queue != Client::DLQ && ((headers[:expires_at] && headers[:expires_at] < Time.now.to_i) || (headers[:redelivery] && headers[:redelivery] >= headers[:max_deliveries]))
-        expired = {:id=>message[:id], :queue=>queue, :headers=>headers}
-        if headers[:delivery] == :once || headers[:delivery] == :repeated
-          @store.transaction { |inserts, deletes, dlqs| dlqs << expired }
-        else # :best_effort
-          @store.transaction { |inserts, deletes, dlqs| deletes << expired }
-        end
-        @mutex.synchronize { @locks.delete message[:id] }
-        return dequeue(args)
-      end
 
       delete = {:id=>message[:id], :queue=>queue, :headers=>headers}
       begin
@@ -562,6 +550,35 @@ module ReliableMsg
       return default unless value
       value = value.to_i
       value > minimum ? value : minimum
+    end
+
+    def filtered(queue, headers)
+      if queue == Client::DLQ
+        false
+      elsif removed_expired(queue, headers)
+        true
+      else
+        false
+      end
+    end
+
+    def removed_expired(queue, headers)
+      now = Time.now.to_i
+      # If the message has expired, or maximum delivery count elapsed, we either
+      # discard the message, or send it to the DLQ.
+      if ((headers[:expires_at] && headers[:expires_at] < now) ||
+          (headers[:redelivery] && headers[:redelivery] >= headers[:max_deliveries]))
+
+        expired = {:id=>headers[:id], :queue=>queue, :headers=>headers}
+        if headers[:delivery] == :once || headers[:delivery] == :repeated
+          @store.transaction { |inserts, deletes, dlqs| dlqs << expired }
+        else # :best_effort
+          @store.transaction { |inserts, deletes, dlqs| deletes << expired }
+        end
+        true
+      else
+        false
+      end
     end
 
   end
