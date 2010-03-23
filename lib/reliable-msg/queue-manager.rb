@@ -303,6 +303,12 @@ module ReliableMsg
         raise ArgumentError, format(ERROR_INVALID_HEADER_VALUE, :expires, "an integer", expires.class) unless expires.is_a?(Integer)
         headers[:expires_at] = Time.now.to_i + expires if expires > 0
       end
+      if activates_at = headers[:activates_at]
+        raise ArgumentError, format(ERROR_INVALID_HEADER_VALUE, :activates_at, "an integer", activates_at.class) unless activates_at.is_a?(Integer)
+      elsif activates = headers[:activates]
+        raise ArgumentError, format(ERROR_INVALID_HEADER_VALUE, :activates, "an integer", activates.class) unless activates.is_a?(Integer)
+        headers[:activates_at] = Time.now.to_i + activates if activates > 0
+      end
       # Create an insertion record for the new message.
       insert = {:id=>id, :queue=>queue, :headers=>headers, :message=>message}
       if tid
@@ -557,6 +563,8 @@ module ReliableMsg
         false
       elsif removed_expired(queue, headers)
         true
+      elsif skip_non_activated(queue, headers)
+        true
       else
         false
       end
@@ -575,6 +583,15 @@ module ReliableMsg
         else # :best_effort
           @store.transaction { |inserts, deletes, dlqs| deletes << expired }
         end
+        true
+      else
+        false
+      end
+    end
+
+    def skip_non_activated(queue, headers)
+      now = Time.now.to_i
+      if headers[:activates_at] && headers[:activates_at] > now
         true
       else
         false
