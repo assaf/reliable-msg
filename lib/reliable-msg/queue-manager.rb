@@ -310,9 +310,6 @@ module ReliableMsg
         headers[:activates_at] = Time.now.to_i + activates if activates > 0
       end
 
-      # Create an insertion record for the new message.
-      insert = {:id=>id, :queue=>queue, :headers=>headers, :message=>message}
-
       # Ensure a message with identical :id does not exist.
       @mutex.synchronize do
         existing_message = @store.get_message queue do |queued_headers|
@@ -325,17 +322,19 @@ module ReliableMsg
 
         if existing_message
           if @locks.has_key?(existing_message[:id])
-            # Identical message is locked.
-            # Do something? @locks[message[:id]] = true
-          else
-            # Ignore incoming message
+            # Identical message is locked, assume it's being processed and doesn't need replacement.
             return nil
+          else
+            # Move along if existing message was removed, return nil otherwise
+            return nil unless remove_replaceable(queue, existing_message[:headers])
           end
         else
-          # Nothing found, move along.
+          # No :id conflicts, move along.
         end
       end
 
+      # Create an insertion record for the new message.
+      insert = {:id=>id, :queue=>queue, :headers=>headers, :message=>message}
       if tid
         tx = @transactions[tid]
         raise RuntimeError, format(ERROR_NO_TRANSACTION, tid) unless tx
@@ -608,6 +607,16 @@ module ReliableMsg
         else # :best_effort
           @store.transaction { |inserts, deletes, dlqs| deletes << expired }
         end
+        true
+      else
+        false
+      end
+    end
+
+    def remove_replaceable(queue, headers)
+      if true == headers[:replaceable]
+        delete = {:id=>headers[:id], :queue=>queue, :headers=>headers}
+        @store.transaction { |inserts, deletes, dlqs| deletes << delete }
         true
       else
         false
