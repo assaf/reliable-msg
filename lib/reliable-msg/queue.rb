@@ -132,6 +132,7 @@ module ReliableMsg
         :delivery => @delivery || :best_effort
       }
       headers = headers ? defaults.merge(headers) : defaults
+      unique_id = headers.delete(:unique_id)
       # Serialize the message before sending to queue manager. We need the
       # message to be serialized for storage, this just saves duplicate
       # serialization when using DRb.
@@ -139,9 +140,9 @@ module ReliableMsg
       # If inside a transaction, always send to the same queue manager, otherwise,
       # allow repeated() to try and access multiple queue managers.
       if tx
-        return tx[:qm].enqueue(:message=>message, :headers=>headers, :queue=>(headers[:queue] || @queue), :tid=>tx[:tid])
+        return tx[:qm].enqueue(:id => unique_id, :message=>message, :headers=>headers, :queue=>(headers[:queue] || @queue), :tid=>tx[:tid])
       else
-        return repeated { |qm| qm.enqueue :message=>message, :headers=>headers, :queue=>(headers[:queue] || @queue) }
+        return repeated { |qm| qm.enqueue :id => unique_id, :message=>message, :headers=>headers, :queue=>(headers[:queue] || @queue) }
       end
     end
 

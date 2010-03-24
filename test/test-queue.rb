@@ -198,6 +198,21 @@ class TestQueue < Test::Unit::TestCase
     assert msg.nil?, "Incorrectly moved a message to DLQ"
   end
 
+  def test_doubled_ids_get_ignored
+    id1 = @queue.put 'first test message',  :unique_id => 'my_semi_unique_id'
+    id2 = @queue.put 'second test message', :unique_id => 'my_semi_unique_id'
+    id3 = @queue.put 'third test message',  :unique_id => 'my_semi_unique_id'
+
+    msg = @queue.get
+    assert msg
+    assert msg.id == id1
+    assert msg.object == 'first test message', "First message not in queue"
+    msg = @queue.get
+    assert msg.nil?
+
+    # Should we put repeats on the dlq?
+  end
+
   def test_backout
     @queue.put "backout test", :delivery=>:repeated
     backout = [ 1, 2, 3, 4 ]

@@ -309,8 +309,33 @@ module ReliableMsg
         raise ArgumentError, format(ERROR_INVALID_HEADER_VALUE, :activates, "an integer", activates.class) unless activates.is_a?(Integer)
         headers[:activates_at] = Time.now.to_i + activates if activates > 0
       end
+
       # Create an insertion record for the new message.
       insert = {:id=>id, :queue=>queue, :headers=>headers, :message=>message}
+
+      # Ensure a message with identical :id does not exist.
+      @mutex.synchronize do
+        existing_message = @store.get_message queue do |queued_headers|
+          if queued_headers[:id] == id
+            true # Identical message is queued.
+          else
+            false # Ignore different :id
+          end
+        end
+
+        if existing_message
+          if @locks.has_key?(existing_message[:id])
+            # Identical message is locked.
+            # Do something? @locks[message[:id]] = true
+          else
+            # Ignore incoming message
+            return nil
+          end
+        else
+          # Nothing found, move along.
+        end
+      end
+
       if tid
         tx = @transactions[tid]
         raise RuntimeError, format(ERROR_NO_TRANSACTION, tid) unless tx
