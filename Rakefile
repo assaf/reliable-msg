@@ -41,7 +41,7 @@ end
 
 
 # Create the GEM package.
-gem_spec = Gem::Specification.load('reliable-msg.gemspec')
+gem_spec = Gem::Specification.load('birkirb-reliable-msg.gemspec')
 
 gem = Rake::GemPackageTask.new(gem_spec) do |pkg|
   pkg.need_tar = true
