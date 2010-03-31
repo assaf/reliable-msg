@@ -99,12 +99,16 @@ Start the queue manager as a standalone server
 
 Use the queue API in your application
 
+  require 'rubygems'  # not needed for ruby 1.9.x
   require 'reliable-msg'
 
-  queue = Queue.new 'my-queue'
+  obj = 'test message'
+  queue = ReliableMsg::Queue.new 'my-queue'
   queue.put obj
   msg = queue.get
-  assert msg.object == obj
+
+  puts "original text:   #{obj}"
+  puts "queue returned:  #{msg.object}"
 
 Stop the queue manager
 
