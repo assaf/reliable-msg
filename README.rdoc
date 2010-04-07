@@ -11,9 +11,9 @@ This release provides the following features:
 
 * Disk-based and MySQL message stores.
 
-* Best effort, repeated and once-only delivery semantics.
+* Best effort, repeated, unique, replaceable and once-only delivery semantics.
 
-* Priority queues, message expiration, dead-letter queue.
+* Priority queues, message expiration, message activation, dead-letter queue.
 
 * Message selectors.
 
@@ -25,7 +25,6 @@ This release provides the following features:
 The latest version of Reliable Messaging can be found at
 
 * http://rubyforge.org/projects/reliable-msg/
-
 
 
 == Installation

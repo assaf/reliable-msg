@@ -10,7 +10,7 @@
 
 require 'test/unit'
 require 'rubygems'
-require 'reliable-msg'
+require 'lib/reliable-msg'
 
 class TestQueue < Test::Unit::TestCase
 
@@ -170,6 +170,60 @@ class TestQueue < Test::Unit::TestCase
     assert msg && msg.id == id1, "Message not moved to DLQ"
   end
 
+  def test_non_activated
+    # Test that we can receive message that have benn activated (1 second delay, we wait for 2),
+    # but cannot receive message that has not been activated (30 second delay), and
+    # that message has been moved to the DLQ.
+    id1 = @queue.put 'first test message', :activates=>5
+    id2 = @queue.put 'second test message', :activates=>2
+
+    msg = @queue.get
+    assert msg.nil?, "Got a message when none should be activated: #{msg.inspect}"
+    msg = @dlq.get
+    assert msg.nil?
+
+    sleep 2
+    msg = @queue.get :id=>id2
+    assert msg, "Failed to retrieve message that should be activated"
+    msg = @queue.get :id=>id1
+    assert msg.nil?, "Incorrectly retrieved non activated message"
+
+    sleep 3
+    msg = @queue.get :id=>id1
+    assert msg, "Failed to retrieve message that should be activated"
+
+    msg = @queue.get
+    assert msg.nil?, "Phantom message"
+    msg = @dlq.get
+    assert msg.nil?, "Incorrectly moved a message to DLQ"
+  end
+
+  def test_doubled_ids_get_ignored
+    id1 = @queue.put 'first test message',  :unique_id => 'my_semi_unique_id'
+    id2 = @queue.put 'second test message', :unique_id => 'my_semi_unique_id'
+    id3 = @queue.put 'third test message',  :unique_id => 'my_semi_unique_id'
+
+    msg = @queue.get
+    assert msg
+    assert msg.id == id1
+    assert msg.object == 'first test message', "First message not in queue"
+    msg = @queue.get
+    assert msg.nil?
+  end
+
+  def test_doubled_replaceable_ids
+    id1 = @queue.put '1st test message',  :unique_id => 'my_semi_unique_id', :replaceable => true
+    id2 = @queue.put '2nd test message',  :unique_id => 'my_semi_unique_id', :replaceable => false
+    id3 = @queue.put '3rd test message',  :unique_id => 'my_semi_unique_id', :replaceable => true
+    id4 = @queue.put '4th test message',  :unique_id => 'my_semi_unique_id', :replaceable => true
+
+    msg = @queue.get
+    assert msg
+    assert msg.object == '2nd test message', "First non replaceable message not in queue"
+    assert msg.id == id2
+    msg = @queue.get
+    assert msg.nil?
+  end
 
   def test_backout
     @queue.put "backout test", :delivery=>:repeated

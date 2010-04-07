@@ -1,3 +1,15 @@
+Release 1.1.2 (birkirb: planned)
+
+* Changed: Refactored enqueue logic to ease filtering.
+* Added: Header parameter specifing activation time, ensuring a message 
+can not be dequeued until after the specified time.
+* Added: Header parameter to override the message id, and handling of 
+conflicting duplicate ids.
+* Added: Header parameter to control behaviour when conflicting ids are found.
+Messages are either replaced with newer ones or discarded.
+
+More info on these changes at: http://wiki.github.com/birkirb/reliable-msg/queue-manager-changes
+
 Release 1.1.1 (Planned)
 
 * Changed: enqueue is actually dequeue, and queue is now enqueue. Contributed
