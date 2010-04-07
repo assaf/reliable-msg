@@ -1,4 +1,4 @@
-Release 1.1.2 (birkirb: planned)
+Release 1.2.0 (Planned)
 
 * Changed: Refactored enqueue logic to ease filtering.
 * Added: Header parameter specifing activation time, ensuring a message 

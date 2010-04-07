@@ -14,6 +14,7 @@ require "drb/acl"
 require "thread"
 require "yaml"
 require "uuid"
+require "logger"
 require "reliable-msg/client"
 require "reliable-msg/message-store"
 

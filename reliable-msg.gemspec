@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name = 'reliable-msg'
-  spec.version = '1.1.1'
+  spec.version = '1.2.0'
   spec.summary = "Reliable messaging and persistent queues for building asynchronous applications in Ruby"
   spec.description = <<-EOF
     This package provides reliable messaging and persistent queues for
@@ -15,7 +15,7 @@ Gem::Specification.new do |spec|
   spec.homepage = 'http://github.com/assaf/reliable-msg'
   spec.rubyforge_project = 'reliable-msg'
 
-  spec.files = Dir['{bin,test,lib,docs}/**/*', 'README.rdoc', 'MIT-LICENSE', 'Rakefile', 'changelog.txt']
+  spec.files = Dir['{bin,test,lib,docs}/**/*', 'README.rdoc', 'MIT-LICENSE', 'Rakefile', 'CHANGELOG', 'reliable-msg.gemspec']
   spec.require_path = 'lib'
   spec.bindir = 'bin'
   spec.executables = ['queues']
